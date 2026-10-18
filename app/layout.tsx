@@ -3,12 +3,14 @@ import './globals.css';
 import './quest.css';
 import './case-board.css';
 import './locked-fortune.css';
+import './fake-giveaway.css';
 import { scenarios } from '@/lib/scenarios';
 import { caseSources, caseStages } from '@/lib/locked-fortune';
+import { giveawaySources, giveawayStages } from '@/lib/fake-giveaway';
 import { siteConfig } from '@/lib/site-config';
 
 const description =
-  'Investigate everyday payments and a real Bitcoin heist. Free, open-source privacy quests for beginners, each with a shareable badge.';
+  'Investigate everyday payments, a Bitcoin heist and a fake giveaway. Free, open-source privacy quests for beginners, each with a shareable badge.';
 const socialImage = {
   url: '/brand/social-card.png',
   width: 1200,
@@ -158,6 +160,68 @@ export default function RootLayout({
               and{' '}
               <a href={caseSources.sentence.url} rel="noreferrer noopener">
                 sentencing announcement
+              </a>
+              .
+            </p>
+            <h2>Quest 03 · The Fake Giveaway</h2>
+            <p>
+              On July 15, 2020, compromised Twitter accounts promoted a fake
+              bitcoin giveaway. Compare invented posts and payment records to
+              discover what they reveal. The final receipt exercise is a
+              fictional what-if, not an event claimed to have occurred in the
+              investigation. No real names, addresses or payments are needed.
+            </p>
+            {giveawayStages.map((stage, index) => (
+              <section key={stage.id}>
+                <h3>
+                  {index + 1}. {stage.title.replace('\n', ' ')}
+                </h3>
+                <p>{stage.story}</p>
+                <p>
+                  <strong>What you know:</strong> {stage.knowledge}
+                </p>
+                <p>
+                  <strong>{stage.newWord}:</strong> {stage.definition}
+                </p>
+                {index === 2 && (
+                  <p>
+                    Compare the choices: keeping a receipt private adds no
+                    public profile link through that receipt. Publishing it
+                    beside your public profile gives readers a link to the
+                    referenced transaction. The underlying transaction remains
+                    public in both versions; neither choice proves ownership of
+                    an entire wallet.
+                  </p>
+                )}
+                <h3>{stage.question}</h3>
+                <ul>
+                  {stage.answers.map((answer) => (
+                    <li key={answer.id}>{answer.text}</li>
+                  ))}
+                </ul>
+                <details>
+                  <summary>Reveal the supported conclusion</summary>
+                  <p>{stage.explanation}</p>
+                  <p>
+                    <strong>Takeaway:</strong> {stage.takeaway}
+                  </p>
+                  <p>{stage.sourceNote}</p>
+                  <a
+                    href={giveawaySources[stage.source].url}
+                    rel="noreferrer noopener"
+                  >
+                    Inspect the primary source
+                  </a>
+                </details>
+              </section>
+            ))}
+            <p>
+              Joseph James O’Connor pleaded guilty on May 9, 2023, and was
+              sentenced on June 23, 2023, to five years for multiple cybercrime
+              offenses, including his role in the Twitter hack. The sentence
+              covered more than the giveaway. See the{' '}
+              <a href={giveawaySources.sentence.url} rel="noreferrer noopener">
+                DOJ sentencing announcement
               </a>
               .
             </p>

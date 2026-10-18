@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useState, type CSSProperties } from 'react';
-import { Award, Search, Download, Share2, Copy, Check } from 'lucide-react';
+import {
+  Award,
+  Search,
+  Radio,
+  Download,
+  Share2,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { badgeMetadata, createBadge, type BadgeQuest } from '@/lib/badge';
 import { siteConfig } from '@/lib/site-config';
@@ -14,7 +22,8 @@ export function BadgeCard({ quest = 'first-clue' }: { quest?: BadgeQuest }) {
 
 function QuestBadgeCard({ quest }: { quest: BadgeQuest }) {
   const badge = badgeMetadata[quest];
-  const isCase = quest === 'locked-fortune';
+  const isCase = quest !== 'first-clue';
+  const isSignal = quest === 'fake-giveaway';
   const [image, setImage] = useState<{ quest: BadgeQuest; blob: Blob } | null>(
     null,
   );
@@ -107,7 +116,9 @@ function QuestBadgeCard({ quest }: { quest: BadgeQuest }) {
           isCase
             ? {
                 borderColor: badge.border,
-                background: 'linear-gradient(145deg, #20364b, #101b29)',
+                background: isSignal
+                  ? 'linear-gradient(145deg, #443316, #211b10)'
+                  : 'linear-gradient(145deg, #20364b, #101b29)',
               }
             : undefined
         }
@@ -123,7 +134,9 @@ function QuestBadgeCard({ quest }: { quest: BadgeQuest }) {
             alt=""
           />
           <span className="earned-badge-mark-divider" />
-          {isCase ? (
+          {isSignal ? (
+            <Radio size={48} strokeWidth={1.3} />
+          ) : isCase ? (
             <Search size={48} strokeWidth={1.3} />
           ) : (
             <Award size={48} strokeWidth={1.3} />

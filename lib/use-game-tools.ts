@@ -44,9 +44,9 @@ export function useGameTools(bridge: Bridge) {
     ];
     const descriptions = [
       'Read the active educational quest, answer options and progress. No wallet or network data is accessed.',
-      'Submit one answer to the active educational question and reveal its explanation. In The Locked Fortune, open the evidence first.',
-      'First Clue: change the payment comparison after switching roles (original/alternative, or direct/coinjoin/relink for CoinJoin). The Locked Fortune: use choice evidence to open the current evidence package.',
-      'First Clue: switch roles after answering or advance after comparing. The Locked Fortune: begin the case from its briefing or advance after answering.',
+      'Submit one answer to the active educational question and reveal its explanation. In real-case quests, open the evidence first. The Fake Giveaway final clue also requires trying the public receipt comparison.',
+      'First Clue: change the payment comparison after switching roles (original/alternative, or direct/coinjoin/relink for CoinJoin). Real-case quests: use choice evidence to open the current package. The Fake Giveaway final clue: compare public-receipt and private-receipt.',
+      'First Clue: switch roles after answering or advance after comparing. Real-case quests: begin from the briefing or advance after answering.',
       'Clear the local game progress and return to the first question.',
     ];
     names.forEach((name, index) => {

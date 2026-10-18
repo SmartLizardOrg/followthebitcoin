@@ -1,6 +1,7 @@
 import { readFile, rm, rmdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { auditStaticRelease, pagesHeaders } from './pages-release.mjs';
+import { compactBootstrap } from './compact-bootstrap.mjs';
 const root = resolve('dist/client');
 const manifest = resolve(root, '.vite/manifest.json');
 if (dirname(dirname(manifest)) !== root)
@@ -16,6 +17,8 @@ try {
 
 // Pages consumes this file as response rules, rather than serving it publicly.
 // Regenerate after every build: stream bootstrap hashes change with the HTML.
-const html = await readFile(resolve(root, 'index.html'), 'utf8');
+const page = resolve(root, 'index.html');
+const html = compactBootstrap(await readFile(page, 'utf8'));
+await writeFile(page, html);
 await writeFile(resolve(root, '_headers'), pagesHeaders(html));
 await auditStaticRelease(root);

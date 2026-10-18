@@ -12,8 +12,13 @@ device. You can download or share it. Wrong guesses never remove rewards.
 In **The Locked Fortune**, open three evidence packages from a simplified
 reconstruction of the Bitfinex investigation. Separate a public transaction
 trail, provider identity records and recovered signing keys to earn the distinct
-**Evidence Detective** badge. No prior quest is required. Both badges are local
-PNG images with an optional native share action and a copyable quest link.
+**Evidence Detective** badge. In **The Fake Giveaway**, investigate a simplified
+version of the July 2020 Twitter hack: compare two posts, distinguish payments
+from people, and try a fictional private/public receipt comparison. Complete
+the case to earn **Signal Sleuth**, with its own gold signal design.
+
+Play the three quests in any order. All badges are local PNG images with an
+optional native share action and a copyable link to their own quest.
 
 Production address: **https://followthebitcoin.pages.dev/**.
 Source and reviews: **https://github.com/SmartLizardOrg/followthebitcoin**.
@@ -23,7 +28,7 @@ Playing requires no account; posting in the optional community requires GitHub.
 The project is brand-neutral. Quests include fictional scenarios and carefully
 sourced reconstructions of real cases, each with its own badge. See the
 [quest evidence and contribution guide](docs/QUESTS.md) for sources and deliberate
-simplifications in The Locked Fortune.
+simplifications in the real-case quests.
 This is an independent educational project, not an official Bitcoin project or
 wallet endorsement.
 
@@ -78,7 +83,10 @@ Node `24.15.0`, and `SKIP_DEPENDENCY_INSTALL=1`. The build command is:
 npm ci --include=dev && npm run lint && npx --no-install tsc --noEmit && npm test && npm run build && npm run check:release
 ```
 
-Each export regenerates `_headers` from the exact emitted inline-script bytes.
+Each export first compacts adjacent, strictly recognized Vinext RSC string-push
+scripts, preserving their order, then regenerates `_headers` from the exact
+final inline-script bytes. This keeps longer reading editions within Pages'
+header limit without allowing arbitrary inline scripts.
 The build rejects stale assets, private artifacts, third-party executable assets
 and CSP lines beyond Cloudflare's 2,000-character limit. Only `dist/client/` is
 uploaded; `dist/server/` and the local Node server are never deployed to Pages.
@@ -97,7 +105,7 @@ npm run build
 npm run check:release
 ```
 
-Tests cover both quests' progression, badge eligibility, invalid actions, satoshi
+Tests cover all quests' progression, badge eligibility, invalid actions, satoshi
 conservation, counter privacy/retention and Pages CSP/artifact safeguards. `--local` relaxes only
 the requirement for configured public URLs; it never weakens artifact checks.
 Community and onion destinations are optional, and unset links must stay honest.

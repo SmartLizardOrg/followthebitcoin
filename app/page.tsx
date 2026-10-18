@@ -35,11 +35,18 @@ import { WebBonus } from './web-bonus';
 import { LockedFortune } from './locked-fortune';
 import { CaseTeaser } from './case-board';
 import { caseReducer, initialCase, caseStages } from '@/lib/locked-fortune';
+import { FakeGiveaway, GiveawayTeaser } from './fake-giveaway';
+import {
+  giveawayReducer,
+  initialGiveaway,
+  giveawayStages,
+} from '@/lib/fake-giveaway';
 
 type View =
   | 'quests'
   | 'quest/first-clue'
   | 'quest/locked-fortune'
+  | 'quest/fake-giveaway'
   | 'privacy'
   | 'community'
   | 'source'
@@ -48,6 +55,7 @@ const views: View[] = [
   'quests',
   'quest/first-clue',
   'quest/locked-fortune',
+  'quest/fake-giveaway',
   'privacy',
   'community',
   'source',
@@ -102,6 +110,10 @@ export default function Home() {
   const [view, setView] = useState<View>('quests');
   const [game, dispatch] = useReducer(gameReducer, initialGame);
   const [caseGame, caseDispatch] = useReducer(caseReducer, initialCase);
+  const [giveawayGame, giveawayDispatch] = useReducer(
+    giveawayReducer,
+    initialGiveaway,
+  );
   const heading = useRef<HTMLHeadingElement>(null);
   const feedback = useRef<HTMLDivElement>(null);
   const paymentMap = useRef<HTMLElement>(null);
@@ -151,6 +163,10 @@ export default function Home() {
     caseDispatch({ type: 'reset' });
     navigate('quest/locked-fortune');
   }
+  function startGiveaway() {
+    giveawayDispatch({ type: 'reset' });
+    navigate('quest/fake-giveaway');
+  }
   function openFirstClue() {
     if (game.phase !== 'complete' && game.answers.length > 0)
       navigate('quest/first-clue');
@@ -161,33 +177,67 @@ export default function Home() {
       navigate('quest/locked-fortune');
     else startCase();
   }
+  function openGiveaway() {
+    if (giveawayGame.phase !== 'briefing' && giveawayGame.phase !== 'complete')
+      navigate('quest/fake-giveaway');
+    else startGiveaway();
+  }
   const activeCase = view === 'quest/locked-fortune';
+  const activeGiveaway = view === 'quest/fake-giveaway';
   const caseStage = caseStages[caseGame.index];
+  const giveawayStage = giveawayStages[giveawayGame.index];
   useGameTools({
-    snapshot: activeCase
+    snapshot: activeGiveaway
       ? {
           screen: view,
-          quest: 'locked-fortune',
-          situation: caseStage.id,
-          phase: caseGame.phase,
-          question: caseStage.question,
-          options: caseStage.answers,
-          evidenceOpened: caseGame.opened,
+          quest: 'fake-giveaway',
+          situation: giveawayStage.id,
+          phase: giveawayGame.phase,
+          question: giveawayStage.question,
+          options: giveawayStage.answers,
+          evidenceOpened: giveawayGame.opened,
+          receiptShared: giveawayGame.receiptShared,
+          explored: giveawayGame.explored,
           revealed:
-            caseGame.phase === 'reveal' || caseGame.phase === 'complete',
+            giveawayGame.phase === 'reveal' ||
+            giveawayGame.phase === 'complete',
         }
-      : {
-          screen: view,
-          quest: 'first-clue',
-          situation: s.id,
-          phase: game.phase,
-          question: s.question,
-          options: s.answers,
-          revealed,
-          explored: game.explored,
-          comparison: game.comparison,
-        },
+      : activeCase
+        ? {
+            screen: view,
+            quest: 'locked-fortune',
+            situation: caseStage.id,
+            phase: caseGame.phase,
+            question: caseStage.question,
+            options: caseStage.answers,
+            evidenceOpened: caseGame.opened,
+            revealed:
+              caseGame.phase === 'reveal' || caseGame.phase === 'complete',
+          }
+        : {
+            screen: view,
+            quest: 'first-clue',
+            situation: s.id,
+            phase: game.phase,
+            question: s.question,
+            options: s.answers,
+            revealed,
+            explored: game.explored,
+            comparison: game.comparison,
+          },
     answer(id) {
+      if (activeGiveaway) {
+        if (
+          giveawayGame.phase !== 'investigate' ||
+          !giveawayGame.opened ||
+          (giveawayGame.index === 2 && !giveawayGame.explored)
+        )
+          throw new Error(
+            'Open the clue and try the receipt comparison before answering',
+          );
+        giveawayDispatch({ type: 'answer', id });
+        return;
+      }
       if (activeCase) {
         if (caseGame.phase !== 'investigate' || !caseGame.opened)
           throw new Error('Open the evidence package before answering');
@@ -199,6 +249,28 @@ export default function Home() {
       dispatch({ type: 'answer', id });
     },
     compare(choice) {
+      if (activeGiveaway) {
+        if (giveawayGame.phase !== 'investigate')
+          throw new Error('Open an unanswered clue first');
+        if (choice === 'evidence' && !giveawayGame.opened) {
+          giveawayDispatch({ type: 'open' });
+          return;
+        }
+        if (
+          giveawayGame.index === 2 &&
+          giveawayGame.opened &&
+          (choice === 'public-receipt' || choice === 'private-receipt')
+        ) {
+          giveawayDispatch({
+            type: 'compare',
+            shared: choice === 'public-receipt',
+          });
+          return;
+        }
+        throw new Error(
+          'Choose evidence, public-receipt or private-receipt when available',
+        );
+      }
       if (activeCase) {
         if (
           choice !== 'evidence' ||
@@ -217,6 +289,14 @@ export default function Home() {
       dispatch(action);
     },
     next() {
+      if (activeGiveaway) {
+        if (giveawayGame.phase === 'briefing')
+          giveawayDispatch({ type: 'begin' });
+        else if (giveawayGame.phase === 'reveal')
+          giveawayDispatch({ type: 'next' });
+        else throw new Error('Inspect the clue and answer before continuing');
+        return;
+      }
       if (activeCase) {
         if (caseGame.phase === 'briefing') caseDispatch({ type: 'begin' });
         else if (caseGame.phase === 'reveal') caseDispatch({ type: 'next' });
@@ -233,7 +313,7 @@ export default function Home() {
       else
         throw new Error('Answer, switch roles and compare before continuing');
     },
-    reset: activeCase ? startCase : start,
+    reset: activeGiveaway ? startGiveaway : activeCase ? startCase : start,
   });
 
   return (
@@ -407,6 +487,50 @@ export default function Home() {
               <CaseTeaser />
             </div>
           </section>
+          <section
+            className="quest-cover giveaway-cover"
+            aria-labelledby="fake-giveaway-title"
+          >
+            <div className="quest-cover-copy">
+              <div className="quest-meta">
+                <span>QUEST 03</span>
+                <span>REAL CASE</span>
+                <span>4–6 MIN</span>
+              </div>
+              <h2 id="fake-giveaway-title">The Fake Giveaway</h2>
+              <p>
+                Famous accounts. An impossible promise. Your friend is about to
+                send bitcoin. Can you spot the clues in the 2020 Twitter hack?
+              </p>
+              <ol className="quest-checklist">
+                <li>
+                  <Eye size={18} />
+                  Look behind two convincing posts
+                </li>
+                <li>
+                  <Search size={18} />
+                  Find what the payment trail really proves
+                </li>
+                <li>
+                  <Award size={18} />
+                  Earn your Signal Sleuth badge
+                </li>
+              </ol>
+              <Button className="primary-action" onClick={openGiveaway}>
+                {giveawayGame.phase !== 'briefing' &&
+                giveawayGame.phase !== 'complete'
+                  ? 'Continue the case'
+                  : 'Investigate the giveaway'}
+                <ArrowRight size={19} />
+              </Button>
+              <p className="start-note">
+                No Bitcoin knowledge needed. Try a privacy choice yourself.
+              </p>
+            </div>
+            <div className="quest-cover-map">
+              <GiveawayTeaser />
+            </div>
+          </section>
           <div className="hub-bottom">
             <p>
               <LockKeyhole size={17} />
@@ -435,6 +559,14 @@ export default function Home() {
         <LockedFortune
           game={caseGame}
           dispatch={caseDispatch}
+          onFirstClue={openFirstClue}
+        />
+      )}
+
+      {view === 'quest/fake-giveaway' && (
+        <FakeGiveaway
+          game={giveawayGame}
+          dispatch={giveawayDispatch}
           onFirstClue={openFirstClue}
         />
       )}
@@ -807,6 +939,10 @@ export default function Home() {
               <Search size={17} />
               Open The Locked Fortune
             </Button>
+            <Button onClick={openGiveaway}>
+              <Eye size={17} />
+              Investigate The Fake Giveaway
+            </Button>
             <Button onClick={() => navigate('bonus')}>
               <Compass size={17} />
               Explore the web privacy bonus
@@ -838,7 +974,8 @@ export default function Home() {
               <p>
                 No account, email address, wallet connection or real transaction
                 is needed. First Clue uses fictional payments. The Locked
-                Fortune uses illustrative evidence based on a documented case.
+                Fortune and The Fake Giveaway use clearly labelled illustrations
+                based on documented cases.
               </p>
             </article>
             <article>
