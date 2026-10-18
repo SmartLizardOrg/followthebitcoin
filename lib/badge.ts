@@ -1,4 +1,4 @@
-export type BadgeQuest = 'first-clue' | 'locked-fortune';
+export type BadgeQuest = 'first-clue' | 'locked-fortune' | 'fake-giveaway';
 
 export const badgeMetadata = {
   'first-clue': {
@@ -32,6 +32,22 @@ export const badgeMetadata = {
     foreground: '#eef6ff',
     muted: '#b7cedd',
   },
+  'fake-giveaway': {
+    questTitle: 'The Fake Giveaway',
+    name: 'Signal Sleuth',
+    filename: 'signal-sleuth-follow-the-bitcoin.png',
+    number: '03',
+    category: 'REAL CASE · BEGINNER',
+    subtitle: 'Check the claim. Follow the signal.',
+    shareText:
+      'I completed The Fake Giveaway and earned Signal Sleuth. A famous account. A public trail. What counts as proof?',
+    route: '/#quest/fake-giveaway',
+    background: '#211b10',
+    border: '#8a6935',
+    accent: '#f6cc75',
+    foreground: '#fff6e4',
+    muted: '#dac59e',
+  },
 } as const;
 
 // Keep the original one-quest API available to existing callers.
@@ -46,7 +62,8 @@ function loadRabbitMark(): Promise<HTMLImageElement> {
       if (image.naturalWidth > 0 && image.naturalHeight > 0) resolve(image);
       else reject(new Error('The badge artwork is unavailable.'));
     };
-    image.onerror = () => reject(new Error('The badge artwork is unavailable.'));
+    image.onerror = () =>
+      reject(new Error('The badge artwork is unavailable.'));
     image.src = '/brand/white-rabbit.png';
   });
 }
@@ -81,7 +98,10 @@ export async function createBadge(
     c.fillText(value, 600, y, 1040);
   };
   text('FOLLOW THE BITCOIN', 155, 28, badge.accent, '700');
-  const markScale = Math.min(88 / rabbit.naturalWidth, 88 / rabbit.naturalHeight);
+  const markScale = Math.min(
+    88 / rabbit.naturalWidth,
+    88 / rabbit.naturalHeight,
+  );
   const markWidth = rabbit.naturalWidth * markScale;
   const markHeight = rabbit.naturalHeight * markScale;
   c.imageSmoothingQuality = 'high';
@@ -97,16 +117,32 @@ export async function createBadge(
   c.beginPath();
   c.arc(600, 420, 152, 0, Math.PI * 2);
   c.stroke();
-  if (quest === 'locked-fortune') {
-    // A magnifying glass drawn entirely on-device, with no image/font asset.
+  if (quest !== 'first-clue') {
     c.save();
     c.lineWidth = 10;
     c.lineCap = 'round';
-    c.beginPath();
-    c.arc(580, 395, 57, 0, Math.PI * 2);
-    c.moveTo(621, 436);
-    c.lineTo(672, 487);
-    c.stroke();
+    if (quest === 'fake-giveaway') {
+      // A radio signal drawn locally, matching the card's signal icon.
+      for (const radius of [46, 87]) {
+        c.beginPath();
+        c.arc(600, 401, radius, -Math.PI / 4, Math.PI / 4);
+        c.stroke();
+        c.beginPath();
+        c.arc(600, 401, radius, (3 * Math.PI) / 4, (5 * Math.PI) / 4);
+        c.stroke();
+      }
+      c.fillStyle = badge.accent;
+      c.beginPath();
+      c.arc(600, 401, 13, 0, Math.PI * 2);
+      c.fill();
+    } else {
+      // A magnifying glass drawn entirely on-device, with no image/font asset.
+      c.beginPath();
+      c.arc(580, 395, 57, 0, Math.PI * 2);
+      c.moveTo(621, 436);
+      c.lineTo(672, 487);
+      c.stroke();
+    }
     c.restore();
     text(badge.number, 542, 27, badge.accent, '700');
     text(
@@ -119,7 +155,9 @@ export async function createBadge(
     text(badge.name, 790, 86, badge.foreground, '700');
     text(badge.subtitle, 855, 30);
     text(
-      'I followed the clues and weighed the evidence.',
+      quest === 'fake-giveaway'
+        ? 'I checked the claim and separated clues from proof.'
+        : 'I followed the clues and weighed the evidence.',
       925,
       27,
       badge.muted,
