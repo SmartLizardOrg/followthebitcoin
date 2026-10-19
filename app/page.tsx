@@ -560,6 +560,7 @@ export default function Home() {
           game={caseGame}
           dispatch={caseDispatch}
           onFirstClue={openFirstClue}
+          onNextQuest={openGiveaway}
         />
       )}
 

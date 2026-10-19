@@ -27,10 +27,12 @@ export function LockedFortune({
   game,
   dispatch,
   onFirstClue,
+  onNextQuest,
 }: {
   game: CaseState;
   dispatch: Dispatch<CaseAction>;
   onFirstClue: () => void;
+  onNextQuest: () => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const feedback = useRef<HTMLDivElement>(null);
@@ -185,7 +187,11 @@ export function LockedFortune({
           </div>
         </section>
         <div className="completion-links">
-          <Button onClick={onFirstClue}>
+          <Button onClick={onNextQuest}>
+            Next quest: The Fake Giveaway
+            <ArrowRight size={17} />
+          </Button>
+          <Button variant="outline" onClick={onFirstClue}>
             Try everyday privacy choices
             <ArrowRight size={17} />
           </Button>
