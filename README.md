@@ -21,8 +21,8 @@ Play the three quests in any order. All badges are local PNG images with an
 optional native share action and a copyable link to their own quest.
 
 Production address: **https://followthebitcoin.pages.dev/**.
-Source and reviews: **https://github.com/SmartLizardOrg/followthebitcoin**.
-Community: **https://github.com/SmartLizardOrg/followthebitcoin/discussions**.
+Source and reviews: **https://github.com/molnard-labs/followthebitcoin**.
+Community: **https://github.com/molnard-labs/followthebitcoin/discussions**.
 Playing requires no account; posting in the optional community requires GitHub.
 
 The project is brand-neutral. Quests include fictional scenarios and carefully
@@ -69,7 +69,7 @@ optional self-hosted daily counter.
 ## Free Cloudflare Pages deployment
 
 The site uses **Cloudflare Pages' native GitHub integration**, project
-`followthebitcoin`, connected to `SmartLizardOrg/followthebitcoin`. Cloudflare
+`followthebitcoin`, connected to `molnard-labs/followthebitcoin`. Cloudflare
 automatically checks, builds and publishes `main`; preview deployments are
 disabled. GitHub Actions separately validates pull requests and retains the
 checked static export for review. It has no publishing job or Cloudflare token.
